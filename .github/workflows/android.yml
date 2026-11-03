@@ -1,0 +1,75 @@
+name: Android build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      # The project has no Gradle wrapper jar; AGP 8.7 needs Gradle 8.9+.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+
+      - name: Decode release keystore (optional)
+        env:
+          KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "Release keystore decoded."
+          else
+            echo "::warning::No RELEASE_KEYSTORE_B64 secret: the APK will be signed with the DEBUG key (testing only)."
+          fi
+
+      - name: Build release APK
+        env:
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          FCM_PROJECT_ID: ${{ secrets.FCM_PROJECT_ID }}
+          FCM_APP_ID: ${{ secrets.FCM_APP_ID }}
+          FCM_API_KEY: ${{ secrets.FCM_API_KEY }}
+          FCM_SENDER_ID: ${{ secrets.FCM_SENDER_ID }}
+        run: gradle assembleRelease --no-daemon --stacktrace
+
+      - name: Show signing-certificate checksum for QR provisioning
+        run: |
+          APK=$(ls app/build/outputs/apk/release/*.apk | head -n1)
+          HEX=$(keytool -printcert -jarfile "$APK" | grep -m1 'SHA256:' | sed 's/.*SHA256: *//' | tr -d ':')
+          B64=$(echo "$HEX" | xxd -r -p | base64 | tr '+/' '-_' | tr -d '=')
+          echo "APK: $APK"
+          echo "PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM: $B64"
+          {
+            echo "### Provisioning checksum"
+            echo "Put this in the admin panel setting \`Provisioning:ApkSignatureChecksum\`:"
+            echo
+            echo "\`$B64\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installment-customer-app-apk
+          path: app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-*.html
+          if-no-files-found: ignore

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:id="@+id/shopName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/shopContact"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:textColor="#555555" />
+
+        <!-- Persistent explanation that the phone is managed -->
+        <TextView
+            android:id="@+id/managedBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#E7F1FF"
+            android:padding="12dp"
+            android:textColor="#0A3069" />
+
+        <TextView
+            android:id="@+id/notManagedBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#FDECEA"
+            android:padding="12dp"
+            android:text="@string/not_managed_warning"
+            android:textColor="#842029"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/enrollSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/enrollStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/apiUrlInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="url"
+                android:hint="Server address (https://...)"
+                android:importantForAutofill="no"
+                android:inputType="textUri" />
+
+            <EditText
+                android:id="@+id/codeInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enrollment code"
+                android:importantForAutofill="no"
+                android:inputType="textCapCharacters|textNoSuggestions" />
+
+            <Button
+                android:id="@+id/enrollButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Enroll this phone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/summarySection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/deviceLine"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#555555" />
+
+            <TextView
+                android:id="@+id/remaining"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/remainingLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Remaining balance"
+                android:textColor="#555555" />
+
+            <TextView
+                android:id="@+id/details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:lineSpacingExtra="6dp"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/overdueBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="#FDECEA"
+                android:padding="12dp"
+                android:textColor="#842029"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/policyLine"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textColor="#555555" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/syncLine"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="#777777"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/refreshButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Refresh now" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Installment</string>
+    <string name="managed_title">This phone is managed</string>
+    <string name="managed_text">This device is managed under your installment agreement with %1$s. It stays managed until the plan is fully paid and the shop releases it.</string>
+    <string name="not_managed_warning">This phone is NOT enrolled as a managed device. Uninstall protection and restrictions are not active.</string>
+    <string name="channel_managed">Managed device</string>
+    <string name="channel_alerts">Payment reminders</string>
+    <string name="admin_disable_warning">This device is managed under an installment agreement and cannot be unmanaged by the customer.</string>
+</resources>
