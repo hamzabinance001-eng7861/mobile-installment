@@ -17,7 +17,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      # GitHub's ubuntu runners ship the Android SDK; accept licenses so Gradle can fetch platform 35 if missing.
+      - name: Accept Android SDK licenses
+        run: yes | "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       # The project has no Gradle wrapper jar; AGP 8.7 needs Gradle 8.9+.
       - uses: gradle/actions/setup-gradle@v4
