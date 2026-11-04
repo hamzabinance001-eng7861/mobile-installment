@@ -52,8 +52,11 @@ jobs:
       - name: Show signing-certificate checksum for QR provisioning
         run: |
           APK=$(ls app/build/outputs/apk/release/*.apk | head -n1)
-          HEX=$(keytool -printcert -jarfile "$APK" | grep -m1 'SHA256:' | sed 's/.*SHA256: *//' | tr -d ':')
-          B64=$(echo "$HEX" | xxd -r -p | base64 | tr '+/' '-_' | tr -d '=')
+          # APKs for minSdk 26+ use v2/v3 signatures, which keytool cannot read; apksigner can.
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n1)
+          HEX=$("$APKSIGNER" verify --print-certs "$APK" | grep -m1 'certificate SHA-256 digest' | sed 's/.*: *//' | tr -d ' :')
+          if [ -z "$HEX" ]; then echo "::error::Could not read the signing certificate from $APK"; exit 1; fi
+          B64=$(echo "$HEX" | xxd -r -p | base64 -w0 | tr '+/' '-_' | tr -d '=')
           echo "APK: $APK"
           echo "PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM: $B64"
           {
