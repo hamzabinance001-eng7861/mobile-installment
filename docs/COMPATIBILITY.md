@@ -11,6 +11,20 @@
   delay WorkManager. On those models, exclude the app from battery optimisation by hand during enrollment and test it.
 - Restricted phones keep their existing Wi-Fi/mobile data so they can reach the server; there is no in-app Wi-Fi picker.
 
+## Brand notes (Xiaomi, Redmi, Poco, Oppo, Realme, Vivo, Infinix/Tecno)
+These are commonly reported behaviours, **not verified by this project** - confirm on a unit of each model.
+- The app runs a small foreground service (shows the "managed" notice) and re-opens the restricted screen if the system
+  closes it. Open **Phone setup check** in the app after enrolling: it shows what is still off and opens the right page.
+- **Xiaomi / Redmi / Poco:** `dpm set-device-owner` may fail with a permission error until Developer options ->
+  *USB debugging (Security settings)* is on (needs a Mi account + SIM/data). Also set Battery saver = *No restrictions*,
+  turn on *Autostart*, and lock the app in Recents.
+- **Oppo / Realme:** Developer options may have a *Disable permission monitoring* toggle needed for Device Owner.
+  Allow *Auto-launch* and *Background activity* for the app.
+- **Vivo:** similar to Oppo; allow *Autostart* and *High background power consumption*.
+- **Infinix / Tecno (Transsion):** allow Auto-start and battery *No restrictions* (Phone Master).
+- On all of them prefer the **adb** enrollment method; QR provisioning is more often blocked by the maker's setup wizard.
+- After each setup change, run the acceptance tests below (especially the offline-lock and reboot tests).
+
 ## Test matrix (fill in per model)
 | Model | Android | Enrol (QR/adb) | Uninstall blocked | Reset blocked | Reboot OK | Offline lock | Admin unlock | Release |
 |-------|---------|----------------|-------------------|---------------|-----------|--------------|--------------|---------|

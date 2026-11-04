@@ -57,8 +57,14 @@ class LockActivity : AppCompatActivity() {
         }
     }
 
+    override fun onPause() {
+        visible = false
+        super.onPause()
+    }
+
     override fun onResume() {
         super.onResume()
+        visible = true
         if (!prefs.restricted) { leave(); return }
         val s = SyncManager.summaryOrNull(prefs)
         val n = NumberFormat.getIntegerInstance()
@@ -94,5 +100,10 @@ class LockActivity : AppCompatActivity() {
     private fun dial(number: String) {
         val uri = if (number.isBlank()) Uri.parse("tel:") else Uri.fromParts("tel", number, null)
         runCatching { startActivity(Intent(Intent.ACTION_DIAL, uri)) }
+    }
+
+    companion object {
+        /** True while the restricted screen is in front; lets the background service re-open it if not. */
+        @Volatile var visible = false
     }
 }

@@ -14,7 +14,10 @@ class InstallmentApp : Application() {
         super.onCreate()
         Notifier.createChannels(this)
         initFirebase()
-        if (Prefs.get(this).isEnrolled) Scheduler.schedulePeriodic(this)
+        if (Prefs.get(this).isEnrolled) {
+            Scheduler.schedulePeriodic(this)
+            com.installment.customerapp.work.EnforcementService.start(this)
+        }
     }
 
     /**

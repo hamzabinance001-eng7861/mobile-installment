@@ -37,6 +37,11 @@ object Notifier {
     /** Persistent notice explaining why the phone is managed. */
     fun showManaged(context: Context, shopName: String?) {
         if (!canPost(context)) return
+        context.getSystemService(NotificationManager::class.java).notify(ID_MANAGED, buildManaged(context, shopName))
+    }
+
+    /** Also used as the foreground-service notification. */
+    fun buildManaged(context: Context, shopName: String?): Notification {
         val shop = shopName?.takeIf { it.isNotBlank() } ?: "the shop"
         val n = NotificationCompat.Builder(context, CH_MANAGED)
             .setSmallIcon(android.R.drawable.ic_lock_idle_lock)
@@ -49,7 +54,7 @@ object Notifier {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .build()
         n.flags = n.flags or Notification.FLAG_NO_CLEAR
-        context.getSystemService(NotificationManager::class.java).notify(ID_MANAGED, n)
+        return n
     }
 
     fun showAlert(context: Context, id: Int, title: String, text: String) {

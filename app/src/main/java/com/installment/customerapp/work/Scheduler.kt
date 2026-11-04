@@ -57,6 +57,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
     override suspend fun doWork(): Result {
         // 1) Offline enforcement first: needs no connectivity.
         Enforcer.evaluate(applicationContext)
+        EnforcementService.start(applicationContext) // no-op when already running
         // 2) Then try to talk to the server.
         return when (SyncManager.sync(applicationContext)) {
             is SyncManager.Outcome.Failed -> if (inputData.getBoolean(KEY_RETRY, false)) Result.retry() else Result.success()
@@ -87,6 +88,7 @@ class EnrollWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             policy.applyBaseline()
             Scheduler.schedulePeriodic(applicationContext)
             SyncManager.sync(applicationContext)
+            EnforcementService.start(applicationContext)
             Result.success()
         } catch (e: ApiException) {
             // 4xx: wrong/expired/used code. Retrying cannot help.
@@ -113,6 +115,7 @@ class BootReceiver : BroadcastReceiver() {
             policy.applyBaseline()
             Scheduler.schedulePeriodic(context)
             Enforcer.evaluate(context)
+            EnforcementService.start(context)
             Scheduler.syncSoon(context)
         } else if (!prefs.pendingCode.isNullOrBlank()) {
             Scheduler.enqueueEnrollment(context)

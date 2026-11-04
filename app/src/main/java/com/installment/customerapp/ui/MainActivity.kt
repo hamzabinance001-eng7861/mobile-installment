@@ -12,6 +12,7 @@ import com.installment.customerapp.R
 import com.installment.customerapp.admin.DevicePolicy
 import com.installment.customerapp.data.Prefs
 import com.installment.customerapp.data.Summary
+import com.installment.customerapp.work.EnforcementService
 import com.installment.customerapp.work.Enforcer
 import com.installment.customerapp.work.Scheduler
 import com.installment.customerapp.work.SyncManager
@@ -35,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
         findViewById<Button>(R.id.refreshButton).setOnClickListener { refresh() }
         findViewById<Button>(R.id.enrollButton).setOnClickListener { enrollManually() }
+        findViewById<Button>(R.id.setupCheckButton).setOnClickListener {
+            startActivity(Intent(this, SetupCheckActivity::class.java))
+        }
     }
 
     override fun onResume() {
@@ -45,7 +49,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
         render()
-        if (prefs.isEnrolled) refresh(silent = true)
+        if (prefs.isEnrolled) {
+            EnforcementService.start(this) // foreground entry point: allowed even where background starts are refused
+            refresh(silent = true)
+        }
     }
 
     private fun enrollManually() {
