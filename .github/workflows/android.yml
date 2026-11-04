@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: write   # lets the build attach the signed APK to the GitHub Release
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -65,6 +68,17 @@ jobs:
             echo
             echo "\`$B64\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Keeps the QR-provisioning download link (…/releases/download/1.0.0/app-release.apk) pointing at the latest build.
+      # Only a build signed with the permanent release key is published, never a debug-signed one.
+      - name: Publish signed APK to release 1.0.0
+        if: github.ref == 'refs/heads/main' && env.RELEASE_KEYSTORE_PATH != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release view 1.0.0 >/dev/null 2>&1 || gh release create 1.0.0 --title "Installment app 1.0.0" --notes "Signed APK used for device provisioning."
+          gh release upload 1.0.0 app/build/outputs/apk/release/app-release.apk --clobber
 
       - uses: actions/upload-artifact@v4
         with:
