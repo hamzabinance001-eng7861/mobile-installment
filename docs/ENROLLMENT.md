@@ -12,7 +12,8 @@ Tell the customer in writing, before the sale, that the phone is managed, what t
 1. Push this repo; GitHub Actions builds `installment-customer-app-apk`. Download the APK and host it on **HTTPS**
    (any static file host you control).
 2. The workflow summary prints the signing-certificate checksum. In the admin panel's `appsettings`
-   (section `Provisioning`) set `ApkUrl`, `ApkSignatureChecksum`, `ApiBaseUrl` (public HTTPS address of the API).
+   (section `Provisioning`) set `ApkUrl`, `ApkSignatureChecksum`, `ApiBaseUrl` (the public HTTPS address of the admin site itself: it also serves the phone API, so there is only one address).
+   `ApkUrl` must download the `.apk` file directly; a GitHub *artifact* is a `.zip` and will not work.
 3. Use the same release keystore (GitHub secret `RELEASE_KEYSTORE_B64`) for every build; a different key changes
    the checksum and old QR codes stop working.
 
