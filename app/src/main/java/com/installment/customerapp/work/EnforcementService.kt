@@ -58,10 +58,12 @@ class EnforcementService : Service() {
             var tick = 0
             while (isActive) {
                 tick(tick++)
-                delay(60_000)
+                delay(30_000)
             }
         }
     }
+
+    private var failures = 0
 
     private fun tick(n: Int) {
         val prefs = Prefs.get(this)
@@ -69,8 +71,16 @@ class EnforcementService : Service() {
         val restricted = Enforcer.evaluate(this)
         // If the system closed the restricted screen (or it never opened after boot), bring it back.
         if (restricted && !LockActivity.visible) DevicePolicy(this).launchLockScreen()
-        // Backstop for brands that delay WorkManager: try a sync every ~15 minutes while connected.
-        if (n % 15 == 14) Scheduler.syncSoon(this)
+
+        // Poll the server about once a minute while it is reachable, so an admin Lock/Restore from the panel is applied
+        // within about a minute even without a push message. Back off when the phone is offline to save battery.
+        val every = 2 * (1 + minOf(failures, 4)) // ticks of 30 s: 1 min, then up to 5 min
+        if (n % every == 0) {
+            when (SyncManager.sync(this)) {
+                is SyncManager.Outcome.Failed -> failures++
+                else -> failures = 0
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
