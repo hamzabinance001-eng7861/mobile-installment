@@ -4,6 +4,7 @@ local.properties
 .idea/
 *.iml
 *.jks
+*.p12
 *.keystore
 google-services.json
 captures/

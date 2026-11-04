@@ -32,6 +32,7 @@ android {
         if (hasReleaseKey) {
             create("release") {
                 storeFile = file(keystorePath)
+                storeType = cfg("RELEASE_KEYSTORE_TYPE").ifBlank { "pkcs12" }
                 storePassword = cfg("RELEASE_KEYSTORE_PASSWORD")
                 keyAlias = cfg("RELEASE_KEY_ALIAS")
                 keyPassword = cfg("RELEASE_KEY_PASSWORD")

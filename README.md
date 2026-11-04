@@ -16,7 +16,7 @@ Android SDK 35) or open the folder in Android Studio.
 ### Repository secrets (all optional, never committed)
 | Secret | Purpose |
 |--------|---------|
-| `RELEASE_KEYSTORE_B64`, `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` | Release signing. Without them the APK is debug-signed (testing only). Keep the same key forever: provisioning QR codes pin its checksum. |
+| `RELEASE_KEYSTORE_B64` (base64 of a PKCS12 `.p12` file), `RELEASE_KEYSTORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD` (same as the store password for PKCS12) | Release signing. Without them the APK is debug-signed (testing only). Keep the same key forever: provisioning QR codes pin its checksum. |
 | `FCM_PROJECT_ID`, `FCM_APP_ID`, `FCM_API_KEY`, `FCM_SENDER_ID` | Firebase Cloud Messaging (free). Without them the app skips push and syncs every 15 minutes. |
 
 ## Layout

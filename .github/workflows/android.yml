@@ -31,8 +31,8 @@ jobs:
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
         run: |
           if [ -n "$KEYSTORE_B64" ]; then
-            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
-            echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.p12"
+            echo "RELEASE_KEYSTORE_PATH=$RUNNER_TEMP/release.p12" >> "$GITHUB_ENV"
             echo "Release keystore decoded."
           else
             echo "::warning::No RELEASE_KEYSTORE_B64 secret: the APK will be signed with the DEBUG key (testing only)."
