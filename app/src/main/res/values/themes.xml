@@ -1,13 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="brand">#0D6EFD</color>
-    <color name="brand_dark">#0A58CA</color>
-    <color name="danger">#B02A37</color>
-    <color name="surface">#F4F6F9</color>
-    <color name="ic_background">#0D6EFD</color>
-    <style name="Theme.Installment" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <color name="brand">#4F46E5</color>
+    <color name="brand_dark">#3730A3</color>
+    <color name="brand_soft">#EEF2FF</color>
+    <color name="ink">#0F172A</color>
+    <color name="muted">#64748B</color>
+    <color name="line">#E6EAF2</color>
+    <color name="surface">#F4F6FB</color>
+    <color name="success">#16A34A</color>
+    <color name="success_soft">#DCFCE7</color>
+    <color name="warn">#B45309</color>
+    <color name="warn_soft">#FEF3C7</color>
+    <color name="danger">#B91C1C</color>
+    <color name="danger_soft">#FEE2E2</color>
+    <color name="danger_dark">#7F1D1D</color>
+    <color name="info_soft">#E0E7FF</color>
+    <color name="ic_background">#4F46E5</color>
+
+    <style name="Theme.Installment" parent="Theme.Material3.Light.NoActionBar">
         <item name="colorPrimary">@color/brand</item>
-        <item name="colorPrimaryDark">@color/brand_dark</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorPrimaryContainer">@color/brand_soft</item>
+        <item name="colorSecondary">@color/brand</item>
         <item name="android:windowBackground">@color/surface</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/surface</item>
+        <!-- light status-bar icons on the dark gradient header -->
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

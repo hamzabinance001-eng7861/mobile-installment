@@ -4,7 +4,10 @@ import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.view.WindowManager
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
@@ -32,6 +35,11 @@ class LockActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lock)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById<View>(R.id.root)) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(0, bars.top, 0, bars.bottom)
+            insets
+        }
         prefs = Prefs.get(this)
         policy = DevicePolicy(this)
 
@@ -70,10 +78,15 @@ class LockActivity : AppCompatActivity() {
         val n = NumberFormat.getIntegerInstance()
         val msg = StringBuilder()
         msg.append(prefs.restrictedReason ?: "This phone has been restricted.").append("\n\n")
-        if (s != null && s.overdueAmount > 0) msg.append("Overdue: ${n.format(s.overdueAmount)} ${s.currency}\n")
         if (s != null) msg.append("Please contact ${s.shopName}${if (s.shopPhone.isNotBlank()) " on ${s.shopPhone}" else ""}.\n")
         msg.append("The phone is restored by the shop after payment is confirmed.")
         findViewById<TextView>(R.id.lockMessage).text = msg.toString()
+        findViewById<TextView>(R.id.lockAmount).apply {
+            if (s != null && s.overdueAmount > 0) {
+                text = "Overdue: ${n.format(s.overdueAmount)} ${s.currency}".trim()
+                visibility = View.VISIBLE
+            } else visibility = View.GONE
+        }
     }
 
     private fun check() {
