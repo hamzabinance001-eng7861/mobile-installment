@@ -22,7 +22,8 @@ class ProvisioningModeActivity : Activity() {
 class PolicyComplianceActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        DevicePolicy(this).applyBaseline()
+        // On Android 10+ the setup details (server address + enrollment code) arrive here.
+        ProvisioningExtras.consume(this, intent)
         setResult(RESULT_OK)
         finish()
     }
