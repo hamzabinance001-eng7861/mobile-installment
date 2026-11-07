@@ -74,7 +74,7 @@ class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(c
 class EnrollWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val prefs = Prefs.get(applicationContext)
-        if (prefs.isEnrolled) return Result.success()
+        if (prefs.isEnrolled && !prefs.needsReenroll) return Result.success()
         val url = prefs.apiUrl
         val code = prefs.pendingCode
         if (url.isNullOrBlank() || code.isNullOrBlank()) return Result.failure()
@@ -85,6 +85,7 @@ class EnrollWorker(context: Context, params: WorkerParameters) : CoroutineWorker
             prefs.deviceToken = ApiClient(url).register(code, fcm, policy.isDeviceOwner)
             prefs.pendingCode = null
             prefs.enrollError = null
+            prefs.needsReenroll = false
             policy.applyBaseline()
             Scheduler.schedulePeriodic(applicationContext)
             SyncManager.sync(applicationContext)

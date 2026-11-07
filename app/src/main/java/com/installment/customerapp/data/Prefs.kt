@@ -83,6 +83,11 @@ class Prefs private constructor(context: Context) {
         get() = sp.getLong("last_trusted", 0L)
         set(v) = sp.edit().putLong("last_trusted", v).apply()
 
+    /** Set when the server no longer recognises this phone's token; the phone stays managed until re-enrolled. */
+    var needsReenroll: Boolean
+        get() = sp.getBoolean("needs_reenroll", false)
+        set(v) = sp.edit().putBoolean("needs_reenroll", v).apply()
+
     val isEnrolled: Boolean get() = !deviceToken.isNullOrEmpty()
 
     fun clearAll() = sp.edit().clear().commit().let { }

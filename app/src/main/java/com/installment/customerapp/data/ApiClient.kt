@@ -8,7 +8,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /** Server answered with an error status. 401 means the device token was revoked (device released). */
-class ApiException(val code: Int, message: String) : IOException(message)
+class ApiException(val code: Int, message: String, val released: Boolean = false) : IOException(message)
 
 /** Plain HttpURLConnection client: no third-party networking dependency, HTTPS enforced by network config. */
 class ApiClient(private val baseUrl: String, private val token: String? = null) {
@@ -65,7 +65,9 @@ class ApiClient(private val baseUrl: String, private val token: String? = null) 
             val text = stream?.bufferedReader()?.use { it.readText() }.orEmpty()
             if (code !in 200..299) {
                 val title = runCatching { JSONObject(text).optString("title") }.getOrNull().orEmpty()
-                throw ApiException(code, title.ifEmpty { "HTTP $code" })
+                // The server sets this header only when the shop explicitly released this phone.
+                val released = code == 401 && conn.getHeaderField("X-Device-Status") == "released"
+                throw ApiException(code, title.ifEmpty { "HTTP $code" }, released)
             }
             return text
         } finally {

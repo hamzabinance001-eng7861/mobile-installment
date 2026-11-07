@@ -97,10 +97,13 @@ class MainActivity : AppCompatActivity() {
         managed.visibility = if (policy.isDeviceOwner) View.VISIBLE else View.GONE
         notManaged.visibility = if (policy.isDeviceOwner) View.GONE else View.VISIBLE
 
-        enroll.visibility = if (prefs.isEnrolled) View.GONE else View.VISIBLE
+        val showEnroll = !prefs.isEnrolled || prefs.needsReenroll
+        enroll.visibility = if (showEnroll) View.VISIBLE else View.GONE
         summarySection.visibility = if (prefs.isEnrolled && s != null) View.VISIBLE else View.GONE
-        if (!prefs.isEnrolled) {
+        if (showEnroll) {
             findViewById<TextView>(R.id.enrollStatus).text = when {
+                prefs.needsReenroll && prefs.pendingCode.isNullOrBlank() ->
+                    "The shop's server does not recognise this phone. It stays managed. Ask the shop for a new enrollment code and enter it below."
                 prefs.enrollError != null -> "Enrollment failed: ${prefs.enrollError}. Ask the shop for a new code."
                 !prefs.pendingCode.isNullOrBlank() -> "Enrolling... this continues automatically when the phone is online."
                 else -> "This phone is not enrolled yet."

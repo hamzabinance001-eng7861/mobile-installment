@@ -41,6 +41,7 @@ object SyncManager {
             prefs.policyMessage = result.policy.message
             prefs.lastSyncMs = System.currentTimeMillis()
             prefs.lastSyncError = null
+            prefs.needsReenroll = false
 
             Notifier.showManaged(context, result.summary.shopName)
             result.commands.forEach { execute(context, client, policy, prefs, it, result.summary) }
@@ -48,11 +49,19 @@ object SyncManager {
             Enforcer.scheduleAlarm(context)
             Outcome.Ok
         } catch (e: ApiException) {
-            if (e.code == 401) {
-                // Token revoked: the shop released this device. Finish the release locally.
-                Log.i(TAG, "Device token revoked; completing release")
+            if (e.code == 401 && e.released) {
+                // The server explicitly says the shop released this device. Finish the release locally.
+                Log.i(TAG, "Server confirmed release; completing it")
                 policy.release()
                 return Outcome.NotEnrolled
+            }
+            if (e.code == 401) {
+                // Not recognised (e.g. the shop's database was replaced). NEVER drop management for this:
+                // keep every restriction and ask for a new enrollment code instead.
+                prefs.needsReenroll = true
+                val msg = "The shop's server does not recognise this phone. Ask the shop for a new enrollment code."
+                prefs.lastSyncError = msg
+                return Outcome.Failed(msg)
             }
             prefs.lastSyncError = e.message
             Outcome.Failed(e.message ?: "Server error")
