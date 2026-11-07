@@ -13,6 +13,7 @@ class InstallmentApp : Application() {
     override fun onCreate() {
         super.onCreate()
         Notifier.createChannels(this)
+        com.installment.customerapp.admin.DevicePolicy(this).ensureHomeNotHijacked()
         initFirebase()
         if (Prefs.get(this).isEnrolled) {
             Scheduler.schedulePeriodic(this)

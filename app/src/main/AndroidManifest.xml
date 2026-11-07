@@ -45,13 +45,24 @@
             android:showWhenLocked="true"
             android:turnScreenOn="true"
             android:screenOrientation="portrait"
-            android:stateNotNeeded="true">
-            <intent-filter android:priority="1">
+            android:stateNotNeeded="true" />
+
+        <!--
+          Acts as the phone's home screen ONLY while the device is restricted: it is disabled by default and
+          enabled/disabled by DevicePolicy. Never declare HOME on a normally visible component: it would hijack the
+          Home button on a released or unrestricted phone.
+        -->
+        <activity-alias
+            android:name=".ui.LockHome"
+            android:targetActivity=".ui.LockActivity"
+            android:enabled="false"
+            android:exported="true">
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-        </activity>
+        </activity-alias>
 
         <!-- Android 12+ QR provisioning: choose fully managed device mode. -->
         <activity

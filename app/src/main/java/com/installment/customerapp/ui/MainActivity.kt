@@ -43,6 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        policy.ensureHomeNotHijacked()
         if (Enforcer.evaluate(this) || prefs.restricted) {
             startActivity(Intent(this, LockActivity::class.java))
             finish()

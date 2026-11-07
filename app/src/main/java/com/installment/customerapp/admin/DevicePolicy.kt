@@ -63,20 +63,40 @@ class DevicePolicy(private val context: Context) {
             runCatching { dpm.setLockTaskFeatures(admin, DevicePolicyManager.LOCK_TASK_FEATURE_NONE) }.logFail("lock task features")
             runCatching { dpm.setStatusBarDisabled(admin, true) }.logFail("status bar")
         }
-        // Home button and reboot both land on the restricted screen.
+        // Home button and reboot both land on the restricted screen. The home alias exists only while restricted.
+        setLockHomeEnabled(true)
         runCatching {
             val filter = IntentFilter(Intent.ACTION_MAIN).apply {
                 addCategory(Intent.CATEGORY_HOME)
                 addCategory(Intent.CATEGORY_DEFAULT)
             }
-            dpm.addPersistentPreferredActivity(admin, filter, ComponentName(context, LockActivity::class.java))
+            dpm.addPersistentPreferredActivity(admin, filter, lockHome)
         }.logFail("preferred home")
         launchLockScreen()
+    }
+
+    private val lockHome = ComponentName(context, "com.installment.customerapp.ui.LockHome")
+
+    /** Enables/disables the HOME alias of the restricted screen. Never leave it enabled on an unrestricted phone. */
+    fun setLockHomeEnabled(enabled: Boolean) {
+        runCatching {
+            context.packageManager.setComponentEnabledSetting(
+                lockHome,
+                if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                PackageManager.DONT_KILL_APP,
+            )
+        }.logFail("lock home alias")
+    }
+
+    /** Self-heal: if the phone is not restricted, the home alias must be off (e.g. after a release or an old build). */
+    fun ensureHomeNotHijacked() {
+        if (!prefs.restricted) setLockHomeEnabled(false)
     }
 
     fun unrestrict() {
         prefs.restricted = false
         prefs.restrictedReason = null
+        setLockHomeEnabled(false)
         if (!isDeviceOwner) return
         runCatching { dpm.clearPackagePersistentPreferredActivities(admin, pkg) }.logFail("clear home")
         if (Build.VERSION.SDK_INT >= 28) runCatching { dpm.setStatusBarDisabled(admin, false) }.logFail("status bar")
