@@ -4,6 +4,9 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
 
+/** One row of the installment schedule. status: Paid, Partial, Pending or Overdue. */
+data class ScheduleItem(val number: Int, val dueDate: String, val amount: Double, val paid: Double, val status: String)
+
 data class Summary(
     val shopName: String,
     val shopPhone: String,
@@ -21,6 +24,7 @@ data class Summary(
     val overdueAmount: Double,
     val overdueDays: Int,
     val graceDays: Int,
+    val schedule: List<ScheduleItem> = emptyList(),
 ) {
     companion object {
         fun from(o: JSONObject) = Summary(
@@ -40,6 +44,13 @@ data class Summary(
             overdueAmount = o.optDouble("overdueAmount", 0.0),
             overdueDays = o.optInt("overdueDays", 0),
             graceDays = o.optInt("gracePeriodDays", 0),
+            schedule = o.optJSONArray("schedule")?.let { a ->
+                (0 until a.length()).map { i ->
+                    val r = a.getJSONObject(i)
+                    ScheduleItem(r.optInt("number"), r.optString("dueDate"), r.optDouble("amount", 0.0),
+                        r.optDouble("paidAmount", 0.0), r.optString("status"))
+                }
+            } ?: emptyList(),
         )
     }
 }

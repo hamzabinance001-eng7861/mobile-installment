@@ -194,6 +194,19 @@ class MainActivity : AppCompatActivity() {
             append("Grace period:  ${s.graceDays} days")
         }
 
+        renderSchedule(s, ::money)
+
+        // One-tap call to the shop
+        findViewById<Button>(R.id.callShopMain).apply {
+            if (s.shopPhone.isNotBlank()) {
+                visibility = View.VISIBLE
+                text = "Call ${s.shopName.ifBlank { "the shop" }}"
+                setOnClickListener {
+                    runCatching { startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.fromParts("tel", s.shopPhone, null))) }
+                }
+            } else visibility = View.GONE
+        }
+
         // Overdue
         val overdueCard = findViewById<View>(R.id.overdueCard)
         if (s.overdueAmount > 0) {
@@ -209,6 +222,82 @@ class MainActivity : AppCompatActivity() {
             visibility = if (msg.isBlank()) View.GONE else View.VISIBLE
         }
     }
+
+    /** Timeline of every installment: coloured dot, date, what is left, and its status. */
+    private fun renderSchedule(s: Summary, money: (Double) -> String) {
+        val card = findViewById<View>(R.id.scheduleCard)
+        val list = findViewById<android.widget.LinearLayout>(R.id.scheduleList)
+        list.removeAllViews()
+        if (!s.hasContract || s.schedule.isEmpty()) { card.visibility = View.GONE; return }
+        card.visibility = View.VISIBLE
+
+        val fmtDate = DateTimeFormatter.ofPattern("d MMM yyyy")
+        // Show every unpaid installment plus the most recent paid ones, so long plans stay short.
+        val firstOpen = s.schedule.indexOfFirst { it.status != "Paid" }.let { if (it < 0) s.schedule.size else it }
+        val visible = s.schedule.filterIndexed { i, _ -> i >= firstOpen - 2 }
+        val hidden = s.schedule.size - visible.size
+        if (hidden > 0) list.addView(plainText("$hidden earlier installment${if (hidden == 1) "" else "s"} paid", 12f, R.color.muted))
+
+        for (item in visible) {
+            val (dot, fg, soft) = when (item.status) {
+                "Paid" -> Triple(R.color.success, R.color.success, R.color.success_soft)
+                "Overdue" -> Triple(R.color.danger, R.color.danger, R.color.danger_soft)
+                "Partial" -> Triple(R.color.warn, R.color.warn, R.color.warn_soft)
+                else -> Triple(R.color.muted, R.color.brand_dark, R.color.info_soft)
+            }
+            val row = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(0, dp(10), 0, dp(10))
+            }
+            row.addView(View(this).apply {
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(getColor(dot))
+                }
+                layoutParams = android.widget.LinearLayout.LayoutParams(dp(10), dp(10)).apply { setMargins(0, 0, dp(12), 0) }
+            })
+            val middle = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                layoutParams = android.widget.LinearLayout.LayoutParams(0, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            }
+            val date = runCatching { LocalDate.parse(item.dueDate.take(10)).format(fmtDate) }.getOrDefault(item.dueDate.take(10))
+            middle.addView(plainText("Installment ${item.number}", 15f, R.color.ink, bold = true))
+            middle.addView(plainText(date, 13f, R.color.muted))
+            row.addView(middle)
+
+            val right = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.VERTICAL
+                gravity = android.view.Gravity.END
+            }
+            val left = (item.amount - item.paid).coerceAtLeast(0.0)
+            right.addView(plainText(if (item.status == "Paid") money(item.amount) else money(left), 15f, R.color.ink, bold = true, end = true))
+            right.addView(android.widget.TextView(this).apply {
+                text = item.status
+                textSize = 11f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTextColor(getColor(fg))
+                setPadding(dp(10), dp(3), dp(10), dp(3))
+                background = android.graphics.drawable.GradientDrawable().apply { setColor(getColor(soft)); cornerRadius = dp(999).toFloat() }
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT, android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+                    .apply { setMargins(0, dp(4), 0, 0) }
+            })
+            row.addView(right)
+            list.addView(row)
+        }
+    }
+
+    private fun plainText(t: String, size: Float, colorRes: Int, bold: Boolean = false, end: Boolean = false) =
+        android.widget.TextView(this).apply {
+            text = t
+            textSize = size
+            setTextColor(getColor(colorRes))
+            if (bold) setTypeface(typeface, android.graphics.Typeface.BOLD)
+            if (end) gravity = android.view.Gravity.END
+        }
+
+    private fun dp(v: Int) = (v * resources.displayMetrics.density).toInt()
 
     private fun fmt(ms: Long) = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(ms))
 }
